@@ -4,6 +4,8 @@ package com.naveen.taskmanager.service;
 import com.naveen.taskmanager.entities.TaskEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -11,14 +13,15 @@ import java.util.Date;
 public class TaskService {
     private ArrayList<TaskEntity> tasks = new ArrayList<>();
     private int taskId = 1;
+    private SimpleDateFormat deadlineFormatter = new SimpleDateFormat("yyy-MM-dd");
 
     // add task
-   public TaskEntity addTask(String title, String description, String deadline){
+   public TaskEntity addTask(String title, String description, String deadline) throws ParseException {
         TaskEntity task = new TaskEntity();
         task.setId(taskId);
         task.setTitle(title);
         task.setDescription(description);
-//        task.setDeadline(new Date(deadline)); // validate date format YYY-MM-DD
+        task.setDeadline(deadlineFormatter.parse(deadline));
         task.setCompleted(false);
         tasks.add(task);
         taskId++;
@@ -39,5 +42,24 @@ public class TaskService {
 
         }
         return null;
+    }
+
+    // edit tasks
+    public TaskEntity updateTask(int id, String description, String deadline, Boolean completed) throws ParseException{
+       TaskEntity task = getTaskById(id);
+       if(task == null){
+           return null;
+       }
+       if(description != null){
+           task.setDescription(description);
+       }
+        if(deadline != null){
+            task.setDeadline(deadlineFormatter.parse(deadline));
+        }
+       if(completed != null){
+           task.setCompleted(completed);
+       }
+
+       return task;
     }
 }
