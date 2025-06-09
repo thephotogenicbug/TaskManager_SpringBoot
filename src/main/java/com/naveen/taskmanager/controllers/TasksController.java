@@ -2,9 +2,12 @@ package com.naveen.taskmanager.controllers;
 
 import com.naveen.taskmanager.dto.CreateTaskDTO;
 import com.naveen.taskmanager.dto.ErrorResponseDTO;
+import com.naveen.taskmanager.dto.TaskResponseDTO;
 import com.naveen.taskmanager.dto.UpdateTaskDTO;
 import com.naveen.taskmanager.entities.TaskEntity;
+import com.naveen.taskmanager.service.NotesService;
 import com.naveen.taskmanager.service.TaskService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +19,12 @@ import java.util.List;
 @RequestMapping("/tasks")
 public class TasksController {
     private final TaskService taskService;
+    private final NotesService notesService;
+    private ModelMapper modelMapper = new ModelMapper();
 
-    public TasksController(TaskService taskService) {
+    public TasksController(TaskService taskService, NotesService notesService) {
         this.taskService = taskService;
+        this.notesService = notesService;
     }
 
     @GetMapping("")
@@ -29,12 +35,15 @@ public class TasksController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskEntity> getTaskById(@PathVariable("id") Integer id){
+    public ResponseEntity<TaskResponseDTO> getTaskById(@PathVariable("id") Integer id){
         var task = taskService.getTaskById(id);
+        var notes = notesService.getNotesForTask(id);
           if(task == null){
               return ResponseEntity.notFound().build();
           }
-        return ResponseEntity.ok(task);
+         var taskResponse = modelMapper.map(task, TaskResponseDTO.class);
+          taskResponse.setNotes(notes);
+        return ResponseEntity.ok(taskResponse);
     }
 
     @PostMapping("")
